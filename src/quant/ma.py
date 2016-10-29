@@ -1,7 +1,6 @@
-#coding:utf-8
-
+# coding:utf-8
 import pandas as pd
-import utils.Valid
+import utils.valid
 
 
 def ma(input_series, period):
@@ -10,7 +9,7 @@ def ma(input_series, period):
     sum = 0
     for index in range(input_series.size):
         value = input_series[index]
-        if not utils.Valid.isValidNumber(value):
+        if not utils.valid.is_valid_number(value):
             continue
         sum += value
         temp_arr.append(value)

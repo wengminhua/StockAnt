@@ -1,7 +1,8 @@
+# coding:utf-8
 import math
 
 
-def isValidNumber(val):
+def is_valid_number(val):
     if val is None:
         return False
     if math.isnan(val):
@@ -9,8 +10,8 @@ def isValidNumber(val):
     return True
 
 
-def isValidNumbers(val_list):
+def is_valid_numbers(val_list):
     for val in val_list:
-        if not isValidNumber(val):
+        if not is_valid_number(val):
             return False
     return True

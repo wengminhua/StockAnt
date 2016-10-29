@@ -1,5 +1,6 @@
+# coding:utf-8
 import pandas as pd
-import utils.Valid
+import utils.valid
 
 
 def greater_than(a_series, b_series, a_factor=1, b_factor=1):
@@ -7,7 +8,7 @@ def greater_than(a_series, b_series, a_factor=1, b_factor=1):
     for i in range(0, len(a_series)):
         a = a_series[i]
         b = b_series[i]
-        if not utils.Valid.isValidNumbers([a, b]):
+        if not utils.valid.is_valid_numbers([a, b]):
             output_arr.append(None)
             continue
         if a * a_factor > b * b_factor:
@@ -22,7 +23,7 @@ def greater_equal(a_series, b_series, a_factor=1, b_factor=1):
     for i in range(0, len(a_series)):
         a = a_series[i]
         b = b_series[i]
-        if not utils.Valid.isValidNumbers([a, b]):
+        if not utils.valid.is_valid_numbers([a, b]):
             output_arr.append(None)
             continue
         if a * a_factor >= b * b_factor:
@@ -45,7 +46,7 @@ def equal(a_series, b_series, a_factor=1, b_factor=1):
     for i in range(0, len(a_series)):
         a = a_series[i]
         b = b_series[i]
-        if not utils.Valid.isValidNumbers([a, b]):
+        if not utils.valid.isValidNumbers([a, b]):
             output_arr.append(None)
             continue
         if a * a_factor == b * b_factor:
@@ -60,7 +61,7 @@ def not_equal(a_series, b_series, a_factor=1, b_factor=1):
     for i in range(0, len(a_series)):
         a = a_series[i]
         b = b_series[i]
-        if not utils.Valid.isValidNumbers([a, b]):
+        if not utils.valid.isValidNumbers([a, b]):
             output_arr.append(None)
             continue
         if a * a_factor == b * b_factor:

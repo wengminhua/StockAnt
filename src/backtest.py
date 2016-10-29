@@ -1,9 +1,11 @@
+# coding:utf-8
 import json
 import time
 import types
-import DataProvider
-import utils.Parser
-import utils.Refect
+from data.stock_hfq_daily_provider import StockHfqDailyProvider
+from data.stock_basic_provider import StockBasicProvider
+import utils.parser
+import utils.reflect
 import pandas as pd
 import math
 
@@ -17,21 +19,22 @@ def backtest(job_filename, result_dir):
     trade_dfs = []
     benchmark_df = init_benchmark_df(job['benchmark'])
     # Parse the date section
-    start_date = utils.Parser.parseDate(job['start_date'])
-    end_date = utils.Parser.parseDate(job['end_date'])
+    start_date = utils.parser.parse_date(job['start_date'])
+    end_date = utils.parser.parse_date(job['end_date'])
     # Parse the stock filter then get the stock set
     stock_codes = stock_filter(job['stock_filter'])
     # Loop the stocks
     done = 0
     for stock_code in stock_codes:
-        if not DataProvider.is_tradable(stock_code):
+        print(stock_code)
+        if not StockBasicProvider.can_trade(stock_code):
             continue
         # Calculate the series
-        stock_df = DataProvider.get_daily_hfq_data(stock_code, start_date, end_date)
+        stock_df = StockHfqDailyProvider.get_data(stock_code, start_date, end_date)
         for series_define in job['series']:
             method_name = series_define['method']
             method_args = build_args(series_define['method_args'], stock_df, job['params'])
-            output = utils.Refect.applyFunc(method_name, method_args)
+            output = utils.reflect.apply_func(method_name, method_args)
             output_names = series_define['name'].split(',')
             if len(output_names) == 1:
                 stock_df.insert(loc=len(stock_df.columns), column=output_names[0], value=output)
@@ -42,7 +45,7 @@ def backtest(job_filename, result_dir):
         trade_define = job['trade']
         trade_method_name = trade_define['method']
         trade_method_args = build_args(trade_define['method_args'], stock_df, job['params'])
-        trade_df = utils.Refect.applyFunc(trade_method_name, trade_method_args)
+        trade_df = utils.reflect.apply_func(trade_method_name, trade_method_args)
         trade_df.insert(loc=0, column="code", value=stock_code)
         trade_dfs.append(trade_df)
         # Benchmark
@@ -50,7 +53,7 @@ def backtest(job_filename, result_dir):
             method_name = benchmark_define['method']
             method_args = build_args(benchmark_define['method_args'], trade_df, job['params'])
             method_args['trade_df'] = trade_df
-            output = utils.Refect.applyFunc(method_name, method_args)
+            output = utils.reflect.apply_func(method_name, method_args)
             output_names = benchmark_define['name'].split(',')
             benchmark_df.set_value(done, 'code', stock_code)
             if len(output_names) == 1:
@@ -103,7 +106,7 @@ def stock_filter(filter_str):
         else:
             filter_category = None
             filter_category_names = filter_values
-    return DataProvider.find_stocks(filter_category, filter_category_names)
+    return StockBasicProvider.find_codes(filter_category, filter_category_names)
 
 
 def build_args(args_dict, stock_df, params_dict):
@@ -150,10 +153,10 @@ def build_single_arg(arg_value, stock_df, params_dict):
 
 
 def parse_str_value(str_value):
-    temp = utils.Parser.parseNumber(str_value)
+    temp = utils.parser.parse_number(str_value)
     if temp is not None:
         return temp
-    temp = utils.Parser.parseBool(str_value)
+    temp = utils.parser.parse_bool(str_value)
     if temp is not None:
         return temp
     return None
@@ -177,7 +180,6 @@ def encode_json(input, encoding):
         return input.encode(encoding)
     else:
         return input
-
 
 
 backtest('D:\\working\\StockAnt\\backtest\\job\\test.json', 'D:\\working\\StockAnt\\backtest\\result\\')
