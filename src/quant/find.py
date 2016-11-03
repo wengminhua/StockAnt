@@ -1,7 +1,9 @@
 # coding:utf-8
 import pandas as pd
+from utils.stock_ant import StockAnt as ant
 
 
+@ant.register(step="quant", types=["series", "number", "number", "string"])
 def find(one_series, start_offset, end_offset, look_for_value):
     output_arr = []
     for i in range(0, len(one_series)):

@@ -1,7 +1,9 @@
 # coding:utf-8
 import pandas as pd
+from utils.stock_ant import StockAnt as ant
 
 
+@ant.register(step="quant", types=["series_list"])
 def series_and(series_arr):
     output_arr = []
     for i in range(0, len(series_arr[0])):
@@ -17,6 +19,7 @@ def series_and(series_arr):
     return pd.Series(output_arr)
 
 
+@ant.register(step="quant", types=["series_list"])
 def series_or(series_arr):
     output_arr = []
     for i in range(0, len(series_arr[0])):

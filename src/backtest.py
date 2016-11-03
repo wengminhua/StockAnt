@@ -182,4 +182,5 @@ def encode_json(input, encoding):
         return input
 
 
-backtest('D:\\working\\StockAnt\\backtest\\job\\test.json', 'D:\\working\\StockAnt\\backtest\\result\\')
+if __name__ == "__main__":
+    backtest('D:\\working\\StockAnt\\backtest\\job\\test.json', 'D:\\working\\StockAnt\\backtest\\result\\')

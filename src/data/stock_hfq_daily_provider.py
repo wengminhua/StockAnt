@@ -43,6 +43,8 @@ class StockHfqDailyProvider:
             start_date = StockBasicProvider.get_first_trade_date(stock_code)
             if end_date is None:
                 end_date = datetime.date.today()
+            if start_date > end_date:
+                start_date = end_date
 
         while True:
             temp_end = start_date + datetime.timedelta(days=600)

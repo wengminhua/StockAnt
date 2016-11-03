@@ -20,7 +20,6 @@ class StockAnt:
             return func
         return decorator
 
-
     @classmethod
     def __add_method(cls, module_name, method_name, step, arg_names, arg_types):
         one_method = dict()

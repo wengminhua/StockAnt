@@ -1,7 +1,8 @@
 # coding:utf-8
 import os
+
+from utils.stock_ant import StockAnt as ant
 from utils import reflect
-from stock_ant import StockAnt as ant
 
 
 def load_modules(module_paths):
@@ -16,5 +17,5 @@ def scan_modules(path):
     os.listdir(path)
 
 if __name__ == '__main__':
-    load_modules(["quant.BIAS"])
+    load_modules(['quant.bias', 'quant.combine', 'quant.compare', 'quant.find', 'quant.ma'])
     print(ant.get_methods())

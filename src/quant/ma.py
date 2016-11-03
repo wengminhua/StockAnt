@@ -1,8 +1,10 @@
 # coding:utf-8
 import pandas as pd
 import utils.valid
+from utils.stock_ant import StockAnt as ant
 
 
+@ant.register(step="quant", types=["series", "number"])
 def ma(input_series, period):
     output_arr = []
     temp_arr = []
