@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<script src="//cdn.bootcss.com/jquery/3.1.1/jquery.js"></script>
+<script src="//cdn.static.runoob.com/libs/angular.js/1.4.6/angular.js"></script>
+<link href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.css" rel="stylesheet">
+<link href="//cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap-theme.css" rel="stylesheet">
+<link href="assets/flat_ui/css/vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+<link href="assets/flat_ui/css/flat-ui.css" rel="stylesheet">
+<link href="assets/flat_ui_demo/assets/css/demo.css" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/isteven-multi-select.css">
+<script type="text/javascript" src="assets/js/isteven-multi-select.js"></script>
+</head>
+<body>
+<div ng-app="app" ng-controller="ctrl" class="container">
+  <div class="demo-headline">
+    <h1 class="demo-logo">
+      <div class="logo"></div>
+        Stock Ant
+      <small>Visual Stock Analysis</small>
+    </h1>
+  </div> <!-- /demo-headline -->
+  <h1 class="demo-section-title">Customerize Module</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+    <div class="row">
+      <div class="col-xs-6">
+        <h4 class="demo-panel-title">Python File</h4>
+      </div>
+      <div class="col-xs-3">
+        <h4 class="demo-panel-title">Module Name</h4>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-6">
+        <input type="file" name="file" class="form-control"/>
+      </div>
+      <div class="col-xs-3">
+        <input type="text" name="name" class="form-control"/>
+      </div>
+    </div>
+    <br>
+     <div class="row">
+      <div class="col-xs-9">
+        <input type="submit" value="Upload" class="btn btn-block btn-lg btn-primary"/>
+      </div>
+    </div>
+    </form>
+  <br>
+  <h1 class="demo-section-title">Basic</h1>
+    <div class="row">
+      <div class="col-xs-3">
+        <h4 class="demo-panel-title">Start Date</h4>
+      </div>
+      <div class="col-xs-3">
+        <h4 class="demo-panel-title">End Date</h4>
+      </div>
+      <div class="col-xs-3">
+        <h4 class="demo-panel-title">Stock Range</h4>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-xs-3">
+        <input type="text" ng-model="job.start_date" class="form-control">
+      </div>
+      <div class="col-xs-3">
+        <input type="text" ng-model="job.end_date" class="form-control">
+      </div>
+      <div class="col-xs-3">
+        <select ng-model="job.stock_filter" ng-options="option for option in stock_filter_options" class="form-control"></select>
+      </div>
+    </div>
+  <br>
+  <h1 class="demo-section-title">Series List</h1>
+ 		<div ng-repeat="one_series in job.series">
+      <div class="row">
+        <div class="col-xs-3">
+          <h4 class="demo-panel-title">{{one_series.name}}</h4>
+        </div>
+        <div class="demo-panel-title col-xs-6"> 
+          <select ng-model="one_series.selectedMethod" class="form-control"
+            ng-options="'['+method.step+']'+method.module+'.'+method.name for method in one_series.methods"
+            ng-change="onMethodChange(one_series.selectedMethod)"></select>
+        </div>
+      </div>
+      <div class="row" ng-repeat="arg in one_series.selectedMethod.args">
+        <div class="col-xs-3"></div>
+        <div class="col-xs-3">
+          <h4 class="demo-panel-title">{{arg.name}}</h4>
+        </div>
+        <div class="demo-panel-title col-xs-3">
+          <input ng-if="arg.type=='number'" ng-model="arg.value" class="form-control">
+          <input ng-if="arg.type=='string'" ng-model="arg.value" class="form-control">
+          <isteven-multi-select ng-if="arg.type=='series'"
+            input-model="arg.series_options" 
+            output-model="arg.value" 
+            button-label="name"
+            item-label="name"
+            tick-property="ticked"
+            selection-mode="single" id="{{arg.name}}">
+          </isteven-multi-select>
+          <isteven-multi-select ng-if="arg.type=='series_list'" 
+            input-model="arg.series_options"
+            output-model="arg.value"
+            button-label="name"
+            item-label="name"
+            tick-property="ticked" id="{{arg.name}}">
+          </isteven-multi-select>
+        </div>  
+      </div>
+    </div>
+  <div class="row">
+    <div class="col-xs-3">
+      <h4 class="demo-panel-title">New Series</h4>
+    </div>
+    <div class="demo-panel-title col-xs-3">
+      <input type="text" ng-model="add_series_name" placeholder="Please input name" class="form-control">
+    </div>
+    <div class="demo-panel-title col-xs-3">
+      <input type="button" ng-click="onAdd()" value="Add" class="btn btn-block btn-lg btn-primary">
+    </div>
+  </div>
+  <br>
+  <div class="row">
+    <div class="demo-panel-title col-xs-12">
+      <input type="button" ng-click="onRun()" value="{{status}}" class="btn btn-block btn-lg btn-info">
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+var app = angular.module('app', ['isteven-multi-select']);
+
+app.controller('ctrl', Controller);
+
+Controller.$inject = [
+	'$scope',
+  '$http',
+  '$window'
+  ];
+
+function Controller($scope, $http, $window) {
+    $scope.stock_filter_options = ["all", "hs300"];
+    $scope.available_series_name_list = [];
+    $scope.available_methods = [];
+
+    $scope.job = new Object();
+    $scope.job.start_date = '2016-01-01';
+    $scope.job.end_date = '2016-10-01';
+    $scope.job.stock_filter = "all";
+    $scope.job.series = [];
+    $scope.job.trade = new Object();
+    $scope.job.benchmark = new Object();
+    
+    $scope.add_series_name = "";
+    $scope.onAdd = onAdd;
+    $scope.onMethodChange = onMethodChange;
+    $scope.onRun = onRun;
+    $scope.getPostSeries = getPostSeries;
+    $scope.window = $window;
+    $scope.status = "Run";
+
+    init_methods();
+    init_series();
+
+    function init_methods() {
+      jQuery.ajax({
+        url: '/api/methods',
+        type: 'POST',
+        contentType: 'application/json',
+        dataType: 'json',
+        data: 'quant.bias,quant.combine,quant.compare,quant.find,quant.ma,trade.buy_signal_trade'
+      })
+      .done(function(data) {
+        $scope.available_methods = data;
+        console.log("Get methods success");
+      })
+      .fail(function() {
+        console.log("Get methods error");
+      });
+    }
+
+    function init_series() {
+      $scope.available_series_name_list = ['date', 'open', 'high', 'low', 'close', 'volume'];
+    }
+
+    function onAdd() {
+      var copy_methods = [];
+      for(var i=0; i<$scope.available_methods.length; i++)
+      {
+        var new_method = jQuery.extend(true, {}, $scope.available_methods[i]);
+        copy_methods.push(new_method);
+      }
+    	$scope.job.series.push({name: $scope.add_series_name, methods: copy_methods});
+      $scope.available_series_name_list.push($scope.add_series_name);
+    }
+
+    function onMethodChange(selectedMethod) {
+      for(var i=0; i<selectedMethod.args.length; i++) {
+        selectedMethod.args[i].series_options = new Array();
+        for(var j=0; j<$scope.available_series_name_list.length-1; j++)
+        {
+          selectedMethod.args[i].series_options.push({name: $scope.available_series_name_list[j], ticked: false});
+        }
+      }
+    }
+
+    function getPostSeries(series) {
+      var post_series = {};
+      post_series.name = series.name;
+      post_series.method = series.selectedMethod.module + "." + series.selectedMethod.name;
+      post_series.method_args = {};
+      for(var j=0; j<series.selectedMethod.args.length; j++)
+      {
+        var arg = series.selectedMethod.args[j];
+        if(arg.type=="number")
+        {
+          post_series.method_args[arg.name] = parseFloat(arg.value);
+        }
+        else if(arg.type=="string")
+        {
+          post_series.method_args[arg.name] = arg.value;
+        }
+        else if(arg.type=="series")
+        {
+          post_series.method_args[arg.name] = "[" + arg.value[0].name + "]";
+        }
+        else if(arg.type=="series_list")
+        {
+          post_series.method_args[arg.name] = [];
+          for(var n=0; n<arg.value.length; n++)
+          {
+            post_series.method_args[arg.name].push("[" + arg.value[n].name + "]");
+          }
+        }
+      }
+      return post_series;
+    }
+
+    function onRun() {
+      var post_job = {};
+      post_job.start_date = $scope.job.start_date;
+      post_job.end_date = $scope.job.end_date;
+      post_job.stock_filter = $scope.job.stock_filter;
+      post_job.params = {};
+      post_job.series = [];
+      for(var i=0; i<$scope.job.series.length; i++)
+      {
+        var series = $scope.job.series[i];
+        var post_series = $scope.getPostSeries(series);
+        if(series.selectedMethod.step=="quant")
+        {
+          post_job.series.push(post_series);
+        }
+        else if(series.selectedMethod.step=="trade")
+        {
+          post_job.trade = post_series;
+        }
+      }
+      post_job.benchmark = [{
+        name: "pnl",
+        method: "benchmark.standard.profit_and_loss",
+        method_args: {}
+      }];
+      console.log(post_job);
+      $scope.status = "Backtesting";
+
+      jQuery.ajax({
+        url: '/api/run',
+        type: 'POST',
+        contentType: 'application/json',
+        dataType: 'json',
+        data: JSON.stringify(post_job)
+      })
+      .done(function(data) {
+        alert("Run success");
+        $scope.window.open("/report.html");
+        $scope.status = "Run";
+      })
+      .fail(function() {
+        alert("Run failed");
+        $scope.status = "Run";
+      });
+    }
+}
+</script>
+</body>
+</html>

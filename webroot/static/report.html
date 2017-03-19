@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>StockAnt</title>
+    <meta charset="utf-8">
+	<link href="assets/css/bootstrap.min.css" rel="stylesheet">
+	<link href="assets/css/bootstrap-responsive.min.css" rel="stylesheet">
+	<link href="assets/css/modern.css" rel="stylesheet">
+    <link href="assets/css/modern-responsive.css" rel="stylesheet">
+    <link href="assets/css/site.css" rel="stylesheet" type="text/css">
+    <link href="assets/css/prettify.css" rel="stylesheet" type="text/css">
+
+    <script type="text/javascript" src="http://cdn.static.runoob.com/libs/jquery/2.1.4/jquery.min.js"></script>
+    <script type="text/javascript" src="http://cdn.bootcss.com/jquery-mousewheel/3.0.6/jquery.mousewheel.min.js"></script>
+	<script type="text/javascript" src="assets/js/bootstrap.min.js"></script>
+	<script type="text/javascript" src="http://code.highcharts.com/highcharts.js"></script>
+	<script type="text/javascript" src="assets/js/papaparse.min.js"></script>
+	<script type="text/javascript" src="report.js"></script>
+</head>
+<body class="container">
+    <table width="100%">
+        <tr>
+			<td>Stock Summary
+				<div id="sumArea" style="height:300px;overflow:scroll">
+					<table id="sumTable" class="striped">
+						<tr>
+							<th>Code</th>
+							<th>Profit</th>
+						</tr>
+					</table>
+				</div>
+			</td>
+			<td style="width:50%">
+				<div id="chartArea"></div>
+			</td>
+		</tr>
+		<tr>
+			<td>Stock Details
+				<div id="detailArea" style="height:300px;overflow:scroll">
+				</div>
+			</td>
+			<td>
+				<div id="curveArea">
+				</div>
+			</td>
+		</tr>
+    </table>
+</body>
+</html>
