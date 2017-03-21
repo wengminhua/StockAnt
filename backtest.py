@@ -1,6 +1,6 @@
 # coding:utf-8
 import json
-import time
+import os
 import types
 from data.stock_hfq_daily_provider import StockHfqDailyProvider
 from data.stock_basic_provider import StockBasicProvider
@@ -66,9 +66,9 @@ def backtest(job_filename, result_dir):
             break
         print(done)
     # Save the trade result
-    pd.concat(trade_dfs).to_csv(result_dir + 'trade.csv', index=False)
+    pd.concat(trade_dfs).to_csv(os.path.join(result_dir, 'trade.csv'), index=False)
     # Save the benchmark result
-    benchmark_df.to_csv(result_dir + 'benchmark.csv', index=False)
+    benchmark_df.to_csv(os.path.join(result_dir, 'benchmark.csv'), index=False)
     return
 
 
