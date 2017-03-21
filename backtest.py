@@ -1,6 +1,6 @@
 # coding:utf-8
 import json
-import time
+import os
 import types
 from data.stock_hfq_daily_provider import StockHfqDailyProvider
 from data.stock_basic_provider import StockBasicProvider
@@ -66,9 +66,9 @@ def backtest(job_filename, result_dir):
             break
         print(done)
     # Save the trade result
-    pd.concat(trade_dfs).to_csv(result_dir + 'trade.csv', index=False)
+    pd.concat(trade_dfs).to_csv(os.path.join(result_dir, 'trade.csv'), index=False)
     # Save the benchmark result
-    benchmark_df.to_csv(result_dir + 'benchmark.csv', index=False)
+    benchmark_df.to_csv(os.path.join(result_dir, 'benchmark.csv'), index=False)
     return
 
 
@@ -185,4 +185,4 @@ def encode_json(input, encoding):
 
 
 if __name__ == "__main__":
-    backtest('D:/projects/Hackathon/StockAnt/job.json', 'D:/projects/Hackathon/StockAnt/')
+    backtest('C:/Users/wengm/Projects/StockAnt/test/bias/bias.json', 'C:/Users/wengm/Projects/StockAnt/test/bias/')
