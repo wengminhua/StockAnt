@@ -1,6 +1,8 @@
 # coding:utf-8
 import tushare as ts
 import datetime
+from db_engine import get_db_engine
+from pandas import read_sql_table
 
 
 class StockBasicProvider:
@@ -15,19 +17,25 @@ class StockBasicProvider:
     @classmethod
     def __get_basic_df(cls):
         if cls._basic_df is None:
-            cls._basic_df = ts.get_stock_basics()
+            engine = get_db_engine()
+            cls._basic_df = read_sql_table("t_stock_basics", engine, index_col='code')
+            # cls._basic_df = ts.get_stock_basics()
         return cls._basic_df
 
     @classmethod
     def __get_industry_df(cls):
         if cls._industry_df is None:
-            cls._industry_df = ts.get_industry_classified()
+            engine = get_db_engine()
+            cls._industry_df = read_sql_table("t_industry_classified", engine)
+            # cls._industry_df = ts.get_industry_classified()
         return cls._industry_df
 
     @classmethod
     def __get_hs300_df(cls):
         if cls._hs300_df is None:
-            cls._hs300_df = ts.get_hs300s()
+            engine = get_db_engine()
+            cls._hs300_df = read_sql_table("t_hs300s", engine)
+            # cls._hs300_df = ts.get_hs300s()
         return cls._hs300_df
 
     @classmethod
@@ -49,7 +57,7 @@ class StockBasicProvider:
         return datetime.datetime(year, month, day).date()
 
     @classmethod
-    def find_codes(cls, category, category_names = None):
+    def find_codes(cls, category, category_names=None):
         if category is None:
             return category_names
         stock_codes = []

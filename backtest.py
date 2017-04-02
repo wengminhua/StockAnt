@@ -13,7 +13,7 @@ import math
 def backtest(job_filename, result_dir):
     # Load the job define file
     job_file = file(job_filename)
-    job = json.load(job_file)
+    job = json.load(job_file, 'utf-8')
     job = encode_json(job, 'utf-8')
     # Define something
     trade_dfs = []
@@ -22,7 +22,7 @@ def backtest(job_filename, result_dir):
     start_date = utils.parser.parse_date(job['start_date'])
     end_date = utils.parser.parse_date(job['end_date'])
     # Parse the stock filter then get the stock set
-    stock_codes = stock_filter(job['stock_filter'])
+    stock_codes = stock_filter(job['stock_filter'].decode('utf-8'))
     # Loop the stocks
     done = 0
     for stock_code in stock_codes:
@@ -62,8 +62,8 @@ def backtest(job_filename, result_dir):
                 for i in range(0, len(output_names)):
                     benchmark_df.set_value(index=done, col=output_names[i], value=output[i])
         done += 1
-        if done > 10:
-            break
+        # if done > 10:
+        #    break
         print(done)
     # Save the trade result
     pd.concat(trade_dfs).to_csv(os.path.join(result_dir, 'trade.csv'), index=False)
@@ -185,4 +185,4 @@ def encode_json(input, encoding):
 
 
 if __name__ == "__main__":
-    backtest('C:/Users/wengm/Projects/StockAnt/test/bias/bias.json', 'C:/Users/wengm/Projects/StockAnt/test/bias/')
+    backtest('C:/Users/wengm/Projects/StockAnt/test/job/bias2.json', 'C:/Users/wengm/Projects/StockAnt/test/job/')
