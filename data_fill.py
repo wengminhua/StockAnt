@@ -1,4 +1,4 @@
-import pandas as pd
+# coding:utf-8
 import tushare as ts
 from data.db_engine import get_db_engine
 

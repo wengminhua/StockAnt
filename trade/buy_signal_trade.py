@@ -10,6 +10,7 @@ def trade(date_series, buy_price_series, high_price_series, low_price_series, cl
     holding_volume = 0
     holding_price = 0
     holding_days = 0
+    max_holding_volume = 100
     row = 0
     signal_continue_count = 0
     for i in range(0, len(date_series)-buy_signal_offset):
@@ -21,7 +22,7 @@ def trade(date_series, buy_price_series, high_price_series, low_price_series, cl
             continue
         if signal == 1:
             signal_continue_count += 1
-            if signal_continue_count >= signal_continue_limit:
+            if signal_continue_count >= signal_continue_limit and holding_volume < max_holding_volume:
                 date = date_series[i + buy_signal_offset]
                 direction = "buy"
                 volume = 100
@@ -43,7 +44,8 @@ def trade(date_series, buy_price_series, high_price_series, low_price_series, cl
                     date = date_series[i]
                     direction = "sell"
                     volume = holding_volume
-                    price = holding_price - holding_price * loss_limit
+                    # price = holding_price - holding_price * loss_limit
+                    price = low_price
                     holding_volume = 0
                     holding_price = 0
                     holding_days = 0
@@ -57,7 +59,8 @@ def trade(date_series, buy_price_series, high_price_series, low_price_series, cl
                     date = date_series[i]
                     direction = "sell"
                     volume = holding_volume
-                    price = holding_price + holding_price * profit_limit
+                    # price = holding_price + holding_price * profit_limit
+                    price = holding_price + holding_price * (profit_limit - profit_limit_step * holding_days)
                     holding_volume = 0
                     holding_price = 0
                     holding_days = 0

@@ -1,7 +1,9 @@
+# coding:utf-8
 import os
 import time
 import backtest
 import pandas as pd
+import datetime
 
 
 def get_job_name(job_filename):
@@ -64,7 +66,7 @@ def analysis_job_result(job_name, job_result_dir):
     value_arr.append(pnl_count)
     # Find Trade Signal
     today_key = get_date_key()
-    buy_signal_df = trade_df[(trade_df['direction'] == 'buy') & (trade_df['date'] == get_date_str('20151014'))]
+    buy_signal_df = trade_df[(trade_df['direction'] == 'buy') & (trade_df['date'] == get_date_str(today_key))]
     code_arr = buy_signal_df['code'].values
     item_arr.extend(code_arr)
     value_arr.extend([1] * len(code_arr))
@@ -77,18 +79,22 @@ def analysis_job_result(job_name, job_result_dir):
 def main():
     job_dir = 'C:/Users/wengm/Projects/StockAnt/test/job'
     result_dir = 'C:/Users/wengm/Projects/StockAnt/test/result'
+    start_date = datetime.date(2015, 1, 1)
+    end_date = datetime.date(2017, 3, 31)
+    run_time = '17:00'
+    run_once_now = True
     while True:
         current_time = get_time_key()
         current_date = get_date_key()
         print current_time
-        if not current_time.endswith('17:00'):
+        if run_once_now or current_time.endswith(run_time):
             job_files = get_job_files(job_dir)
             analysis_df = None
             for job_file in job_files:
                 job_name = get_job_name(job_file)
                 job_result_dir = make_job_result_dir(job_file, result_dir)
                 print(job_result_dir)
-                backtest.backtest(job_file, job_result_dir)
+                backtest.backtest(job_file, job_result_dir, start_date, end_date)
                 job_analysis_df = analysis_job_result(job_name, job_result_dir)
                 if analysis_df is None:
                     analysis_df = job_analysis_df
@@ -97,7 +103,7 @@ def main():
                 print(analysis_df)
             analysis_df = analysis_df.fillna(0)
             analysis_df.to_csv(os.path.join(result_dir, current_date + '.csv'), index=False)
-            break
+            run_once_now = False
         else:
             time.sleep(60)
 

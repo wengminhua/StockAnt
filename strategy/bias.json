@@ -1,0 +1,94 @@
+{
+	"start_date": "2015-01-01",
+	"end_date": "2017-04-01",
+	"stock_filter": "hs300",
+	"params": {
+		"bias_period": 5,
+		"volume_period": 20,
+		"bias_limit": -15,
+		"volume_limit": 1.8,
+		"bias_range_start": -20,
+		"bias_range_end": 0
+		},
+	"series": [{
+		"name": "ma",
+		"method": "quant.ma.ma",
+		"method_args": {
+			"input_series": "[close]",
+			"period": "%bias_period%"
+			}
+		},{
+		"name": "bias",
+		"method": "quant.bias.bias",
+		"method_args": {
+			"close_series": "[close]",
+			"ma_series": "[ma]"
+			}
+		},{
+		"name": "volume_ma",
+		"method": "quant.ma.ma",
+		"method_args": {
+			"input_series": "[volume]",
+			"period": "%volume_period%"
+			}
+		},{
+		"name": "low_bias",
+		"method": "quant.compare.smaller_than",
+		"method_args": {
+			"a_series": "[bias]",
+			"b_series": "[%bias_limit%]"
+			}
+		},{
+		"name": "low_bias_find",
+		"method": "quant.find.find",
+		"method_args": {
+			"one_series": "[low_bias]",
+			"start_offset": "%bias_range_start%",
+			"end_offset": "%bias_range_end%",
+			"look_for_value": "True"
+			}
+		},{
+		"name": "low_bias_find_limit",
+		"method": "quant.compare.greater_equal",
+		"method_args": {
+			"a_series": "[low_bias_find]",
+			"b_series": "[1]"
+			}
+		},{
+		"name": "high_volume",
+		"method": "quant.compare.greater_than",
+		"method_args": {
+			"a_series": "[volume]",
+			"b_series": "[volume_ma]",
+			"b_factor": "%volume_limit%"
+			}
+		},{
+		"name": "buy_signal",
+		"method": "quant.combine.series_and",
+		"method_args": {
+			"series_arr": ["[low_bias_find_limit]","[high_volume]"]
+			}
+		}],
+	"trade": {
+		"method": "trade.buy_signal_trade.trade",
+		"method_args": {
+			"date_series": "[date]",
+			"buy_price_series": "[close]",
+			"high_price_series": "[high]",
+			"low_price_series": "[low]",
+			"close_price_series": "[close]",
+			"signal_series": "[buy_signal]",
+			"signal_continue_limit": 1,
+			"buy_signal_offset": 0,
+			"profit_limit": 0.2,
+			"profit_limit_step": 0.01,
+			"loss_limit": 0.4,
+			"loss_limit_step": 0.01
+			}
+		},
+	"benchmark": [{
+		"name": "pnl",
+		"method": "benchmark.standard.profit_and_loss",
+		"method_args": {}
+		}]
+}

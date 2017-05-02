@@ -7,10 +7,9 @@ from data.stock_basic_provider import StockBasicProvider
 import utils.parser
 import utils.reflect
 import pandas as pd
-import math
 
 
-def backtest(job_filename, result_dir):
+def backtest(job_filename, result_dir, start_date=None, end_date=None):
     # Load the job define file
     job_file = file(job_filename)
     job = json.load(job_file, 'utf-8')
@@ -19,8 +18,10 @@ def backtest(job_filename, result_dir):
     trade_dfs = []
     benchmark_df = init_benchmark_df(job['benchmark'])
     # Parse the date section
-    start_date = utils.parser.parse_date(job['start_date'])
-    end_date = utils.parser.parse_date(job['end_date'])
+    if start_date is None:
+        start_date = utils.parser.parse_date(job['start_date'])
+    if end_date is None:
+        end_date = utils.parser.parse_date(job['end_date'])
     # Parse the stock filter then get the stock set
     stock_codes = stock_filter(job['stock_filter'].decode('utf-8'))
     # Loop the stocks
@@ -41,6 +42,7 @@ def backtest(job_filename, result_dir):
             else:
                 for i in range(0, len(output_names)):
                     stock_df.insert(loc=len(stock_df.columns), column=output_names[i], value=output[i])
+        stock_df.to_csv(os.path.join(result_dir, stock_code + '.csv'), index=False)
         # Trading
         trade_define = job['trade']
         trade_method_name = trade_define['method']
@@ -96,7 +98,7 @@ def stock_filter(filter_str):
         is_stock_codes = True
         for filter_value in filter_values:
             for c in range(0, len(filter_value)):
-                if not ('0' <= c <= '9'):
+                if not ('0' <= filter_value[c] <= '9'):
                     is_stock_codes = False
                     break
             if not is_stock_codes and len(filter_values) > 1:
@@ -185,4 +187,4 @@ def encode_json(input, encoding):
 
 
 if __name__ == "__main__":
-    backtest('C:/Users/wengm/Projects/StockAnt/test/job/bias2.json', 'C:/Users/wengm/Projects/StockAnt/test/job/')
+    backtest('./strategy/ma_cross.json', 'D:/working/StockAnt/output/ma_cross/')
