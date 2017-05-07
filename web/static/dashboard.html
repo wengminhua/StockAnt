@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>StockAnt Analysis</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/bootstrap-table.min.css">
+    <style type="text/css">
+        .tableTitle {
+            font: bold 20px arial,sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-3">
+                <div id="benchmark-table-toolbar">
+                    <span class="tableTitle">Benchmark</span>
+                </div>
+                <table id="benchmark-table"
+                       data-toolbar="#benchmark-table-toolbar">
+                </table>
+            </div>
+            <div class="col-md-3">
+                <div id="trade-table-toolbar">
+                    <span class="tableTitle" id="trade-table-title"></span>
+                </div>
+                <table id="trade-table"
+                       data-toolbar="#trade-table-toolbar">
+                </table>
+            </div>
+            <div class="col-md-6">
+                Stock Chart
+            </div>
+        </div>
+    </div>
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/bootstrap-table.min.js"></script>
+    <script src="js/bootstrap-table-zh-CN.min.js"></script>
+    <script src="js/jquery.formatCurrency.js"></script>
+    <script src="js/jquery.formatCurrency.mine.js"></script>
+    <script language="javascript">
+        $(function() {
+           	$.formatCurrency.setDefaults({region: 'mine'});
+           	initBenchmarkTable();
+           	initTradeTable();
+        });
+
+        function initBenchmarkTable() {
+           $("#benchmark-table").bootstrapTable({
+              method: "GET",
+              dataType: "json",
+              cache: false,
+              sidePagination: "client",
+              url: "/api/benchmark",
+              pagination: true,
+              search: true,
+              columns: [{
+                    field: "id",
+                    title: "ID",
+                    align: "right",
+                    formatter: function (value, row, index) {
+                        return index + 1;
+                    }
+                },{
+                    field: "code",
+                    title: "Code",
+                    align: "center",
+                    sortable: true,
+                    formatter: function (value, row, index) {
+                        return ["<a href='javascript:onClickStock(" + value + ")'>",
+                                value,
+                                "</a>"].join('');
+                    }
+                },{
+                    field: "pnl",
+                    title: "PNL",
+                    align: "right",
+                    sortable: true,
+                    formatter: function (value, row, index) {
+                        var color = "grey";
+                        if (value > 0) {
+                            color = "red";
+                        } else if (value < 0) {
+                            color = "green";
+                        }
+                        return ["<font color='" + color + "'>",
+                                $.getFormattedCurrency(value),
+                                "</font>"].join('');
+                    }
+                }]
+           });
+        }
+
+        function initTradeTable() {
+            $("#trade-table").bootstrapTable({
+              cache: false,
+              sidePagination: "client",
+              pagination: true,
+              search: true,
+              columns: [{
+                            field: "id",
+                            title: "ID",
+                            align: "right",
+                            formatter: function (value, row, index) {
+                                return index + 1;
+                            }
+                        },{
+                            field: "date",
+                            title: "Date",
+                            align: "center",
+                            sortable: true,
+                            formatter: function (value, row, index) {
+                                return ["<a href='javascript:onClickTradeDate(" + value + ")'>",
+                                        value,
+                                        "</a>"].join('');
+                            }
+                        },{
+                            field: "price",
+                            title: "Price",
+                            align: "right",
+                            sortable: false,
+                            formatter: function (value, row, index) {
+                                return $.getFormattedCurrency(value);
+                            }
+                        },{
+                            field: "volume",
+                            title: "Volume",
+                            align: "right",
+                            sortable: false,
+                            formatter: function (value, row, index) {
+                                var color = "grey";
+                                var direction = "";
+                                if (row.direction == "buy") {
+                                    color = "red";
+                                    direction = "+";
+                                } else if (row.direction == "sell") {
+                                    color = "green";
+                                    direction = "-";
+                                }
+                                return ["<font color='" + color + "'>",
+                                        direction,
+                                        value,
+                                        "</font>"].join('');
+                            }
+                        }]
+           });
+        }
+
+        function loadTradeTable(code) {
+            $.ajax({
+                type: "GET",
+                url: "/api/trade/" + code,
+                dataType: "json",
+                success: function(result) {
+                    $("#trade-table").bootstrapTable("load", result);
+                },
+                error: function() {
+                    $("#trade-table").bootstrapTable("removeAll");
+                    alert("Load trade information failed.");
+                }
+            });
+        }
+
+        function onClickStock(code) {
+            $("#trade-table-title").html(code);
+            loadTradeTable(code);
+        }
+    </script>
+</body>
+</html>
