@@ -14,6 +14,11 @@
 		"method_args": {
 			"input_series": "[close]",
 			"period": "%fast%"
+			},
+		"chart": {
+			"index": 0,
+			"type": "line",
+			"name": "MA_FAST"
 			}
 		},{
 		"name": "ma_middle",
@@ -21,6 +26,11 @@
 		"method_args": {
 			"input_series": "[close]",
 			"period": "%middle%"
+			},
+		"chart": {
+			"index": 0,
+			"type": "line",
+			"name": "MA_MID"
 			}
 		},{
 		"name": "ma_slow",
@@ -28,6 +38,11 @@
 		"method_args": {
 			"input_series": "[close]",
 			"period": "%slow%"
+			},
+		"chart": {
+			"index": 0,
+			"type": "line",
+			"name": "MA_SLOW"
 			}
 		},{
 		"name": "cross_fast_middle",
