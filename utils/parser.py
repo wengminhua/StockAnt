@@ -1,6 +1,7 @@
 # coding:utf-8
 import time
 import datetime
+import re
 
 
 def parse_date(date_str):
@@ -9,12 +10,19 @@ def parse_date(date_str):
 
 
 def parse_number(num_str):
-    if not num_str.isdigit():
-        return None
-    if num_str.find(r'.') >= 0:
+    int_role = re.compile(r'^[-+]?[0-9]+$')
+    float_role = re.compile(r'^[-+]?[0-9]+\.[0-9]+$')
+    if float_role.match(num_str):
         return float(num_str)
-    else:
+    if int_role.match(num_str):
         return int(num_str)
+    return None
+    #if not num_str.isdigit():
+    #    return None
+    #if num_str.find(r'.') >= 0:
+    #    return float(num_str)
+    #else:
+    #    return int(num_str)
 
 
 def parse_bool(bool_str):

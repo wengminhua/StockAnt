@@ -1,6 +1,4 @@
-from flask import Flask, jsonify, request
-from backtest import backtest
-from data.history_daily_provider import HistoryDailyProvider
+from flask import Flask, jsonify
 import utils.parser
 import pandas as pd
 import os
@@ -23,17 +21,37 @@ def index():
 def web_root(path):
     return g_app.send_static_file(path)
 
+@g_app.route("/api/benchmark/define", methods=["GET"])
+def get_benchmark_data():
+    global g_strategy_filename, g_result_path
+    # Check benchmark data defines
+    job_file = file(g_strategy_filename)
+    job = json.load(job_file, 'utf-8')
+    result_arr = []
+    for benchmark_define in job['benchmark']:
+        benchmark_names = benchmark_define["name"].split(',')
+        for benchmark_name in benchmark_names:
+            result_arr.append(benchmark_name)
+    return jsonify(result_arr)
 
-@g_app.route("/api/benchmark", methods=["GET"])
+
+@g_app.route("/api/benchmark/data", methods=["GET"])
 def get_benchmark():
-    global g_result_path
+    global g_strategy_filename, g_result_path
+    # Check benchmark data defines
+    job_file = file(g_strategy_filename)
+    job = json.load(job_file, 'utf-8')
     benchmark_filename = os.path.join(g_result_path, "benchmark.csv")
     benchmark_df = pd.read_csv(benchmark_filename)
     result_arr = []
     for idx, row in benchmark_df.iterrows():
-        code = str(int(row["code"])).zfill(6)
-        pnl = int(row["pnl"])
-        result_arr.append({"code": code, "pnl": pnl})
+        obj = dict()
+        obj["code"] = str(int(row["code"])).zfill(6)
+        for benchmark_define in job['benchmark']:
+            benchmark_names = benchmark_define["name"].split(',')
+            for benchmark_name in benchmark_names:
+                obj[benchmark_name] = int(row[benchmark_name])
+        result_arr.append(obj)
     return jsonify(result_arr)
 
 
@@ -131,6 +149,6 @@ def main(argv=None):
 
 if __name__ == "__main__":
     # sys.exit(main())
-    g_strategy_filename = "C:/Users/wengm/Projects/StockAnt/workspace/strategy/ma_cross.json"
-    g_result_path = "D:/working/StockAnt/output/ma_cross"
+    g_strategy_filename = "C:/Users/wengm/Projects/StockAnt/workspace/strategy/ema_cross_cut.json"
+    g_result_path = "D:/working/StockAnt/output/ema_cross"
     g_app.run()

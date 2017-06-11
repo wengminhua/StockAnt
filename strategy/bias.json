@@ -1,7 +1,8 @@
 {
 	"start_date": "2015-01-01",
 	"end_date": "2017-04-01",
-	"stock_filter": "hs300",
+	"code_type": "stock",
+	"code_filter": "hs300",
 	"params": {
 		"bias_period": 5,
 		"volume_period": 20,

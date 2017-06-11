@@ -1,0 +1,229 @@
+{
+	"start_date": "2015-01-01",
+	"end_date": "2017-04-01",
+	"code_type": "stock",
+	"code_filter": "hs300",
+	"params": {
+		"fast": 5,
+		"middle": 10,
+		"slow": 30,
+		"up_cross_range": -2,
+        "down_cross_range": -10
+		},
+	"series": [{
+		"name": "ema_fast",
+		"method": "quant.ma.ma",
+		"method_args": {
+			"input_series": "[close]",
+			"period": "%fast%"
+			},
+        "chart": {
+			"index": 0,
+			"type": "line",
+			"name": "EMA_FAST"
+			}
+		},{
+		"name": "ema_middle",
+		"method": "quant.ma.ma",
+		"method_args": {
+			"input_series": "[close]",
+			"period": "%middle%"
+			},
+        "chart": {
+			"index": 0,
+			"type": "line",
+			"name": "EMA_MID"
+			}
+		},{
+		"name": "ema_slow",
+		"method": "quant.ma.ma",
+		"method_args": {
+			"input_series": "[close]",
+			"period": "%slow%"
+			},
+        "chart": {
+			"index": 0,
+			"type": "line",
+			"name": "EMA_SLOW"
+			}
+		},{
+		"name": "cross_fast_middle",
+		"method": "quant.cross.cross",
+		"method_args": {
+			"a_series": "[ema_fast]",
+            "b_series": "[ema_middle]"
+			}
+		},{
+		"name": "cross_fast_slow",
+		"method": "quant.cross.cross",
+		"method_args": {
+			"a_series": "[ema_fast]",
+            "b_series": "[ema_slow]"
+			}
+		},{
+		"name": "cross_up_fast_middle_count",
+		"method": "quant.find.find",
+		"method_args": {
+			"one_series": "[cross_fast_middle]",
+			"start_offset": "%up_cross_range%",
+			"end_offset": 0,
+			"look_for_value": "1"
+			}
+		},{
+		"name": "cross_up_fast_slow_count",
+		"method": "quant.find.find",
+		"method_args": {
+			"one_series": "[cross_fast_slow]",
+			"start_offset": "%up_cross_range%",
+			"end_offset": 0,
+			"look_for_value": "1"
+			}
+		},{
+		"name": "cross_up_fast_middle_limit",
+		"method": "quant.compare.greater_equal",
+		"method_args": {
+			"a_series": "[cross_up_fast_middle_count]",
+			"b_series": "[1]"
+			}
+		},{
+		"name": "cross_up_fast_slow_limit",
+		"method": "quant.compare.greater_equal",
+		"method_args": {
+			"a_series": "[cross_up_fast_slow_count]",
+			"b_series": "[1]"
+			}
+		},{
+		"name": "cross_down_fast_middle_count",
+		"method": "quant.find.find",
+		"method_args": {
+			"one_series": "[cross_fast_middle]",
+			"start_offset": "%down_cross_range%",
+			"end_offset": 0,
+			"look_for_value": "-1"
+			}
+		},{
+		"name": "cross_down_fast_slow_count",
+		"method": "quant.find.find",
+		"method_args": {
+			"one_series": "[cross_fast_slow]",
+			"start_offset": "%down_cross_range%",
+			"end_offset": 0,
+			"look_for_value": "-1"
+			}
+		},{
+		"name": "cross_down_fast_middle_limit",
+		"method": "quant.compare.smaller_equal",
+		"method_args": {
+			"a_series": "[cross_down_fast_middle_count]",
+			"b_series": "[0]"
+			}
+		},{
+		"name": "cross_down_fast_slow_limit",
+		"method": "quant.compare.smaller_equal",
+		"method_args": {
+			"a_series": "[cross_down_fast_slow_count]",
+			"b_series": "[0]"
+			}
+		},{
+		"name": "price_higher_ema",
+		"method": "quant.compare.greater_than",
+		"method_args": {
+			"a_series": "[low]",
+			"b_series": "[ema_fast]"
+			}
+		},{
+		"name": "today_is_red",
+		"method": "quant.compare.greater_than",
+		"method_args": {
+			"a_series": "[close]",
+			"b_series": "[open]"
+			}
+		},{
+		"name": "ema_fast_higher_mid",
+		"method": "quant.compare.greater_than",
+		"method_args": {
+			"a_series": "[ema_fast]",
+			"b_series": "[ema_middle]"
+			}
+		},{
+		"name": "ema_mid_higher_slow",
+		"method": "quant.compare.greater_than",
+		"method_args": {
+			"a_series": "[ema_middle]",
+			"b_series": "[ema_slow]"
+			}
+		},{
+		"name": "buy_signal",
+		"method": "quant.combine.series_and",
+		"method_args": {
+			"series_arr": [
+              "[cross_up_fast_middle_limit]",
+              "[cross_up_fast_slow_limit]",
+              "[price_higher_ema]",
+              "[today_is_red]",
+              "[ema_fast_higher_mid]",
+              "[ema_mid_higher_slow]"]
+			}
+		},{
+		"name": "cross_down_fast_middle",
+		"method": "quant.compare.equal",
+		"method_args": {
+			"a_series": "[cross_fast_middle]",
+			"b_series": "[-1]"
+			}
+		},{
+		"name": "cross_down_fast_slow",
+		"method": "quant.compare.equal",
+		"method_args": {
+			"a_series": "[cross_fast_slow]",
+			"b_series": "[-1]"
+			}
+		},{
+        "name": "price_lower_ema",
+		"method": "quant.compare.smaller_equal",
+		"method_args": {
+			"a_series": "[high]",
+			"b_series": "[ema_fast]"
+			}
+        },{
+		"name": "sell_signal",
+		"method": "quant.combine.series_or",
+		"method_args": {
+			"series_arr": ["[cross_down_fast_middle]","[cross_down_fast_slow]","[price_lower_ema]"]
+			}
+		}],
+	"trade": {
+		"method": "trade.buy_signal_trade.trade",
+		"method_args": {
+			"date_series": "[date]",
+			"buy_price_series": "[close]",
+			"high_price_series": "[high]",
+			"low_price_series": "[low]",
+			"close_price_series": "[close]",
+			"signal_series": "[buy_signal]",
+			"signal_continue_limit": 1,
+			"buy_signal_offset": 0,
+			"profit_limit": 1.0,
+			"profit_limit_step": 0.01,
+			"loss_limit": 0.5,
+			"loss_limit_step": 0.01
+			}
+		},
+	"benchmark": [{
+		"name": "pnl",
+		"method": "benchmark.standard.profit_and_loss",
+		"method_args": {}
+		},{
+		"name": "buy_count,sell_count",
+		"method": "benchmark.standard.buy_and_sell_count",
+		"method_args": {}
+		},{
+		"name": "profit_count,loss_count",
+		"method": "benchmark.standard.profit_and_loss_count",
+		"method_args": {}
+		},{
+		"name": "pnl_percentage",
+		"method": "benchmark.standard.profit_and_loss_percentage",
+		"method_args": {}
+		}]
+}

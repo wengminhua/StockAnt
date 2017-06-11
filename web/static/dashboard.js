@@ -1,47 +1,75 @@
 function initBenchmarkTable() {
-   $("#benchmark-table").bootstrapTable({
-      method: "GET",
-      dataType: "json",
-      cache: false,
-      sidePagination: "client",
-      url: "/api/benchmark",
-      pagination: true,
-      search: true,
-      columns: [{
-            field: "id",
-            title: "ID",
-            align: "right",
-            formatter: function (value, row, index) {
-                return index + 1;
-            }
-        },{
-            field: "code",
-            title: "Code",
-            align: "center",
-            sortable: true,
-            formatter: function (value, row, index) {
-                return ["<a href=\"javascript:onClickStock('" + value + "');\">",
-                        value,
-                        "</a>"].join('');
-            }
-        },{
-            field: "pnl",
-            title: "P&L",
-            align: "right",
-            sortable: true,
-            formatter: function (value, row, index) {
-                var color = "grey";
-                if (value > 0) {
-                    color = "red";
-                } else if (value < 0) {
-                    color = "green";
+   $.ajax({
+        type: "GET",
+        url: "/api/benchmark/define",
+        dataType: "json",
+        success: function(result) {
+            var tableColumns = [{
+                field: "id",
+                title: "ID",
+                align: "right",
+                formatter: function (value, row, index) {
+                    return index + 1;
                 }
-                return ["<font color='" + color + "'>",
-                        $.getFormattedCurrency(value),
-                        "</font>"].join('');
+            },{
+                field: "code",
+                title: "Code",
+                align: "center",
+                sortable: true,
+                formatter: function (value, row, index) {
+                    return ["<a href=\"javascript:onClickStock('" + value + "');\">",
+                            value,
+                            "</a>"].join('');
+                }
+            }];
+            for(var i=0; i<result.length; i++) {
+                tableColumns.push({
+                    field: result[i],
+                    title: result[i],
+                    align: "right",
+                    sortable: true,
+                    formatter: function (value, row, index) {
+                        var color = "grey";
+                        if (value > 0) {
+                            color = "red";
+                        } else if (value < 0) {
+                            color = "green";
+                        }
+                        return ["<font color='" + color + "'>",
+                                $.getFormattedCurrency(value),
+                                "</font>"].join('');
+                    }
+                });
             }
-        }]
-   });
+            $("#benchmark-table").bootstrapTable({
+                cache: false,
+                sidePagination: "client",
+                pagination: true,
+                search: true,
+                columns: tableColumns
+            });
+            loadBenchmarkTable();
+        },
+        error: function() {
+            $("#benchmark-table").bootstrapTable("removeAll");
+            alert("Load benchmark define failed.");
+        }
+    });
+}
+
+function loadBenchmarkTable() {
+    $.ajax({
+        type: "GET",
+        url: "/api/benchmark/data",
+        dataType: "json",
+        success: function(result) {
+            $("#benchmark-table").bootstrapTable("load", result);
+        },
+        error: function() {
+            $("#benchmark-table").bootstrapTable("removeAll");
+            alert("Load benchmark information failed.");
+        }
+    });
 }
 
 function initTradeTable() {

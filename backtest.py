@@ -4,6 +4,8 @@ import os
 import types
 from data.stock_hfq_daily_provider import StockHfqDailyProvider
 from data.stock_basic_provider import StockBasicProvider
+from data.index_basic_provider import IndexBasicProvider
+from data.index_daily_provider import IndexDailyProvider
 import utils.parser
 import utils.reflect
 import pandas as pd
@@ -23,15 +25,27 @@ def backtest(job_filename, result_dir, start_date=None, end_date=None):
     if end_date is None:
         end_date = utils.parser.parse_date(job['end_date'])
     # Parse the stock filter then get the stock set
-    stock_codes = stock_filter(job['stock_filter'].decode('utf-8'))
+    filter_category, filter_category_names = parse_code_filter(job['code_filter'].decode('utf-8'))
+    if filter_category is None and filter_category_names is None:
+        return
+    if job['code_type'] == "stock":
+        backtest_basic_provider = StockBasicProvider
+        backtest_daily_provider = StockHfqDailyProvider
+    elif job['code_type'] == "index":
+        backtest_basic_provider = IndexBasicProvider
+        backtest_daily_provider = IndexDailyProvider
+    else:
+        print "Invalid code type"
+        return None
+    backtest_codes = backtest_basic_provider.find_codes(filter_category, filter_category_names)
     # Loop the stocks
     done = 0
-    for stock_code in stock_codes:
-        print(stock_code)
-        if not StockBasicProvider.can_trade(stock_code):
+    for backtest_code in backtest_codes:
+        print(backtest_code)
+        if not backtest_basic_provider.can_trade(backtest_code):
             continue
         # Calculate the series
-        stock_df = StockHfqDailyProvider.get_data(stock_code, start_date, end_date)
+        stock_df = backtest_daily_provider.get_data(backtest_code, start_date, end_date)
         for series_define in job['series']:
             method_name = series_define['method']
             method_args = build_args(series_define['method_args'], stock_df, job['params'])
@@ -42,22 +56,23 @@ def backtest(job_filename, result_dir, start_date=None, end_date=None):
             else:
                 for i in range(0, len(output_names)):
                     stock_df.insert(loc=len(stock_df.columns), column=output_names[i], value=output[i])
-        stock_df.to_csv(os.path.join(result_dir, stock_code + '.csv'), index=False)
+        stock_df.to_csv(os.path.join(result_dir, backtest_code + '.csv'), index=False)
         # Trading
         trade_define = job['trade']
         trade_method_name = trade_define['method']
         trade_method_args = build_args(trade_define['method_args'], stock_df, job['params'])
         trade_df = utils.reflect.apply_func(trade_method_name, trade_method_args)
-        trade_df.insert(loc=0, column="code", value=stock_code)
+        trade_df.insert(loc=0, column="code", value=backtest_code)
         trade_dfs.append(trade_df)
         # Benchmark
         for benchmark_define in job['benchmark']:
             method_name = benchmark_define['method']
             method_args = build_args(benchmark_define['method_args'], trade_df, job['params'])
+            method_args['stock_df'] = stock_df
             method_args['trade_df'] = trade_df
             output = utils.reflect.apply_func(method_name, method_args)
             output_names = benchmark_define['name'].split(',')
-            benchmark_df.set_value(done, 'code', stock_code)
+            benchmark_df.set_value(done, 'code', backtest_code)
             if len(output_names) == 1:
                 benchmark_df.set_value(index=done, col=output_names[0], value=output)
             else:
@@ -83,34 +98,34 @@ def init_benchmark_df(benchmark_defines):
     return pd.DataFrame(columns=column_names)
 
 
-def stock_filter(filter_str):
-    split_pos = filter_str.find(':')
+def parse_code_filter(code_filter):
+    split_pos = code_filter.find(':')
     if split_pos > 0:
-        filter_values = filter_str.split(':')
+        filter_values = code_filter.split(':')
         if len(filter_values) == 2:
             filter_category = filter_values[0]
             filter_category_names = filter_values[1].split(',')
         else:
-            print('Invalid stock filter')
-            return
+            print('Invalid code filter')
+            return None
     else:
-        filter_values = filter_str.split(',')
-        is_stock_codes = True
+        filter_values = code_filter.split(',')
+        is_codes = True
         for filter_value in filter_values:
             for c in range(0, len(filter_value)):
                 if not ('0' <= filter_value[c] <= '9'):
-                    is_stock_codes = False
+                    is_codes = False
                     break
-            if not is_stock_codes and len(filter_values) > 1:
-                print('Invalid stock filter')
-                return
+            if not is_codes and len(filter_values) > 1:
+                print('Invalid code filter')
+                return None
         if len(filter_values) == 1:
             filter_category = filter_values[0]
             filter_category_names = None
         else:
             filter_category = None
             filter_category_names = filter_values
-    return StockBasicProvider.find_codes(filter_category, filter_category_names)
+    return filter_category, filter_category_names
 
 
 def build_args(args_dict, stock_df, params_dict):
@@ -175,16 +190,16 @@ def get_temp_series_name():
      return 'SYS_%d' % temp_series_id
 
 
-def encode_json(input, encoding):
-    if isinstance(input, dict):
-        return {encode_json(key, encoding): encode_json(value, encoding) for (key, value) in input.items()}
-    elif isinstance(input, list):
-        return [encode_json(element, encoding) for element in input]
-    elif isinstance(input, unicode):
-        return input.encode(encoding)
+def encode_json(input_value, encoding):
+    if isinstance(input_value, dict):
+        return {encode_json(key, encoding): encode_json(value, encoding) for (key, value) in input_value.items()}
+    elif isinstance(input_value, list):
+        return [encode_json(element, encoding) for element in input_value]
+    elif isinstance(input_value, unicode):
+        return input_value.encode(encoding)
     else:
-        return input
+        return input_value
 
 
 if __name__ == "__main__":
-    backtest('./strategy/ma_cross.json', 'D:/working/StockAnt/output/ma_cross/')
+    backtest('./strategy/ema_cross_cut.json', 'D:/working/StockAnt/output/ema_cross/')
