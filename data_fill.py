@@ -146,7 +146,6 @@ def __date_to_str(date):
 
 def main():
     init_index()
-    return
     init_stock_basics()
     init_industry_classified()
     init_concept_classified()

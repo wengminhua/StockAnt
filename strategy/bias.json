@@ -1,8 +1,8 @@
 {
-	"start_date": "2015-01-01",
-	"end_date": "2017-04-01",
+	"start_date": "2010-01-01",
+	"end_date": "2017-11-01",
 	"code_type": "stock",
-	"code_filter": "hs300",
+	"code_filter": "all",
 	"params": {
 		"bias_period": 5,
 		"volume_period": 20,
@@ -81,15 +81,31 @@
 			"signal_series": "[buy_signal]",
 			"signal_continue_limit": 1,
 			"buy_signal_offset": 0,
-			"profit_limit": 0.2,
+			"profit_limit": 0.5,
 			"profit_limit_step": 0.01,
-			"loss_limit": 0.4,
+			"loss_limit": 0.5,
 			"loss_limit_step": 0.01
 			}
 		},
 	"benchmark": [{
 		"name": "pnl",
 		"method": "benchmark.standard.profit_and_loss",
+		"method_args": {}
+		},{
+		"name": "buy_count,sell_count",
+		"method": "benchmark.standard.buy_and_sell_count",
+		"method_args": {}
+		},{
+		"name": "profit_count,loss_count",
+		"method": "benchmark.standard.profit_and_loss_count",
+		"method_args": {}
+		},{
+		"name": "pnl_percent",
+		"method": "benchmark.standard.profit_and_loss_percentage",
+		"method_args": {}
+		},{
+		"name": "ref_pnl_percent",
+		"method": "benchmark.standard.reference_profit_and_loss_percentage",
 		"method_args": {}
 		}]
 }

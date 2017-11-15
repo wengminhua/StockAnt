@@ -28,10 +28,10 @@ def trade(date_series, buy_price_series, high_price_series, low_price_series, cl
                 price = buy_price_series[i + buy_signal_offset]
                 holding_price = (holding_volume * holding_price + volume * price) / (holding_volume + volume)
                 holding_volume += volume
-                trade_df.set_value(row, "date", date)
-                trade_df.set_value(row, "direction", direction)
-                trade_df.set_value(row, "volume", 100)
-                trade_df.set_value(row, "price", price)
+                trade_df.at[row, "date"] = date
+                trade_df.at[row, "direction"] = direction
+                trade_df.at[row, "volume"] = 100
+                trade_df.at[row, "price"] = price
                 row += 1
         else:
             signal_continue_count = 0
@@ -48,10 +48,10 @@ def trade(date_series, buy_price_series, high_price_series, low_price_series, cl
                     holding_volume = 0
                     holding_price = 0
                     holding_days = 0
-                    trade_df.set_value(row, "date", date)
-                    trade_df.set_value(row, "direction", direction)
-                    trade_df.set_value(row, "volume", volume)
-                    trade_df.set_value(row, "price", price)
+                    trade_df.at[row, "date"] = date
+                    trade_df.at[row, "direction"] = direction
+                    trade_df.at[row, "volume"] = volume
+                    trade_df.at[row, "price"] = price
                     row += 1
                     continue
                 if ((high_price - holding_price) / holding_price) >= (profit_limit - profit_limit_step * holding_days):
@@ -63,10 +63,10 @@ def trade(date_series, buy_price_series, high_price_series, low_price_series, cl
                     holding_volume = 0
                     holding_price = 0
                     holding_days = 0
-                    trade_df.set_value(row, "date", date)
-                    trade_df.set_value(row, "direction", direction)
-                    trade_df.set_value(row, "volume", volume)
-                    trade_df.set_value(row, "price", price)
+                    trade_df.at[row, "date"] = date
+                    trade_df.at[row, "direction"] = direction
+                    trade_df.at[row, "volume"] = volume
+                    trade_df.at[row, "price"] = price
                     row += 1
                     continue
     last_index = len(date_series) - 1
@@ -78,8 +78,8 @@ def trade(date_series, buy_price_series, high_price_series, low_price_series, cl
         holding_volume = 0
         holding_price = 0
         holding_days = 0
-        trade_df.set_value(row, "date", date)
-        trade_df.set_value(row, "direction", direction)
-        trade_df.set_value(row, "volume", volume)
-        trade_df.set_value(row, "price", price)
+        trade_df.at[row, "date"] = date
+        trade_df.at[row, "direction"] = direction
+        trade_df.at[row, "volume"] = volume
+        trade_df.at[row, "price"] = price
     return trade_df

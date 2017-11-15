@@ -60,7 +60,7 @@ class StockHfqDailyProvider:
                     print("Tushare exeption:" + err.message)
             if df is not None:
                 df["code"] = pd.Series(code, index=df.index)
-                df.to_sql("t_daily_hfq", engine, if_exists="append")
+                df.to_sql("t_daily_hfq", engine, if_exists="append", index=False)
             start_date = temp_end + datetime.timedelta(days=1)
             if start_date >= end_date:
                 break

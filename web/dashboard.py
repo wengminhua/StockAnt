@@ -149,6 +149,6 @@ def main(argv=None):
 
 if __name__ == "__main__":
     # sys.exit(main())
-    g_strategy_filename = "C:/Users/wengm/Projects/StockAnt/workspace/strategy/ema_cross_cut.json"
-    g_result_path = "D:/working/StockAnt/output/ema_cross"
+    g_strategy_filename = "D:/wengmh1/StockAnt.git/strategy/bias.json"
+    g_result_path = "D:/wengmh1/output/bias"
     g_app.run()

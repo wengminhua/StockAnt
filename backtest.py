@@ -9,6 +9,11 @@ from data.index_daily_provider import IndexDailyProvider
 import utils.parser
 import utils.reflect
 import pandas as pd
+from mpi4py import MPI
+
+g_comm = MPI.COMM_WORLD
+g_comm_rank = g_comm.Get_rank()
+g_comm_size = g_comm.Get_size()
 
 
 def backtest(job_filename, result_dir, start_date=None, end_date=None):
@@ -39,9 +44,15 @@ def backtest(job_filename, result_dir, start_date=None, end_date=None):
         return None
     backtest_codes = backtest_basic_provider.find_codes(filter_category, filter_category_names)
     # Loop the stocks
-    done = 0
+    global_count = 0
+    count = 0
     for backtest_code in backtest_codes:
-        print(backtest_code)
+        global_count += 1
+        if global_count % g_comm_size == g_comm_rank:
+            count += 1
+        else:
+            continue
+        print("Process %d: %s" % (global_count, backtest_code))
         if not backtest_basic_provider.can_trade(backtest_code):
             continue
         # Calculate the series
@@ -72,20 +83,29 @@ def backtest(job_filename, result_dir, start_date=None, end_date=None):
             method_args['trade_df'] = trade_df
             output = utils.reflect.apply_func(method_name, method_args)
             output_names = benchmark_define['name'].split(',')
-            benchmark_df.set_value(done, 'code', backtest_code)
+            benchmark_df.at[count, 'code'] = backtest_code
             if len(output_names) == 1:
-                benchmark_df.set_value(index=done, col=output_names[0], value=output)
+                benchmark_df.at[count, output_names[0]] = output
             else:
                 for i in range(0, len(output_names)):
-                    benchmark_df.set_value(index=done, col=output_names[i], value=output[i])
-        done += 1
-        # if done > 10:
-        #    break
-        print(done)
+                    benchmark_df.at[count, output_names[i]] = output[i]
     # Save the trade result
-    pd.concat(trade_dfs).to_csv(os.path.join(result_dir, 'trade.csv'), index=False)
+    if g_comm_rank == 0:
+        for source in range(1, g_comm_size):
+            temp_dfs = g_comm.recv(source=source, tag=10)
+            trade_dfs.extend(temp_dfs)
+        pd.concat(trade_dfs).to_csv(os.path.join(result_dir, 'trade.csv'), index=False)
+    else:
+        g_comm.send(trade_dfs, dest=0, tag=10)
     # Save the benchmark result
-    benchmark_df.to_csv(os.path.join(result_dir, 'benchmark.csv'), index=False)
+    if g_comm_rank == 0:
+        benchmark_dfs = [benchmark_df]
+        for source in range(1, g_comm_size):
+            temp_df = g_comm.recv(source=source, tag=20)
+            benchmark_dfs.append(temp_df)
+        pd.concat(benchmark_dfs).to_csv(os.path.join(result_dir, 'benchmark.csv'), index=False)
+    else:
+        g_comm.send(benchmark_df, dest=0, tag=20)
     return
 
 
@@ -202,4 +222,4 @@ def encode_json(input_value, encoding):
 
 
 if __name__ == "__main__":
-    backtest('./strategy/ema_cross_cut.json', 'D:/working/StockAnt/output/ema_cross/')
+    backtest('./strategy/bias.json', 'D:/wengmh1/output/bias/')
