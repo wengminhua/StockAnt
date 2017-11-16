@@ -9,6 +9,8 @@ from data.index_daily_provider import IndexDailyProvider
 import utils.parser
 import utils.reflect
 import pandas as pd
+import sys
+import getopt
 from mpi4py import MPI
 
 g_comm = MPI.COMM_WORLD
@@ -221,5 +223,16 @@ def encode_json(input_value, encoding):
         return input_value
 
 
+def main(argv=None):
+    if argv is None:
+        argv = sys.argv
+    options, args = getopt.getopt(argv[1:], "s:r:", ["strategy=", "result="])
+    for name, value in options:
+        if name in ("-s", "--strategy"):
+            strategy_filename = value
+        if name in ("-r", "--result"):
+            result_path = value
+    backtest(strategy_filename, result_path)
+
 if __name__ == "__main__":
-    backtest('./strategy/bias.json', 'D:/wengmh1/output/bias/')
+    sys.exit(main())

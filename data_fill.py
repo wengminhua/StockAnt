@@ -98,7 +98,7 @@ def init_sz50s():
 def init_zz500s():
     print "Init ZZ500"
     engine = get_db_engine()
-    df = ts.get_sz50s()
+    df = ts.get_zz500s()
     sql = "delete from t_zz500s"
     conn = engine.connect()
     conn.execute(sql)
