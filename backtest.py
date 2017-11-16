@@ -71,12 +71,13 @@ def backtest(job_filename, result_dir, start_date=None, end_date=None):
                     stock_df.insert(loc=len(stock_df.columns), column=output_names[i], value=output[i])
         stock_df.to_csv(os.path.join(result_dir, backtest_code + '.csv'), index=False)
         # Trading
-        trade_define = job['trade']
-        trade_method_name = trade_define['method']
-        trade_method_args = build_args(trade_define['method_args'], stock_df, job['params'])
-        trade_df = utils.reflect.apply_func(trade_method_name, trade_method_args)
-        trade_df.insert(loc=0, column="code", value=backtest_code)
-        trade_dfs.append(trade_df)
+        if job.has_key('trade'):
+            trade_define = job['trade']
+            trade_method_name = trade_define['method']
+            trade_method_args = build_args(trade_define['method_args'], stock_df, job['params'])
+            trade_df = utils.reflect.apply_func(trade_method_name, trade_method_args)
+            trade_df.insert(loc=0, column="code", value=backtest_code)
+            trade_dfs.append(trade_df)
         # Benchmark
         for benchmark_define in job['benchmark']:
             method_name = benchmark_define['method']
@@ -96,7 +97,8 @@ def backtest(job_filename, result_dir, start_date=None, end_date=None):
         for source in range(1, g_comm_size):
             temp_dfs = g_comm.recv(source=source, tag=10)
             trade_dfs.extend(temp_dfs)
-        pd.concat(trade_dfs).to_csv(os.path.join(result_dir, 'trade.csv'), index=False)
+        if len(trade_dfs) > 0:
+            pd.concat(trade_dfs).to_csv(os.path.join(result_dir, 'trade.csv'), index=False)
     else:
         g_comm.send(trade_dfs, dest=0, tag=10)
     # Save the benchmark result

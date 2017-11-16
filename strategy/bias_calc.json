@@ -1,0 +1,55 @@
+{
+	"start_date": "2007-01-01",
+	"end_date": "2017-11-01",
+	"code_type": "stock",
+	"code_filter": "all",
+	"params": {
+		"bias_period_short": 6,
+		"bias_period_middle": 12,
+		"bias_period_long": 24
+		},
+	"series": [{
+		"name": "ma_short",
+		"method": "quant.ma.ma",
+		"method_args": {
+			"input_series": "[close]",
+			"period": "%bias_period_short%"
+			}
+		},{
+			"name": "ma_middle",
+			"method": "quant.ma.ma",
+			"method_args": {
+				"input_series": "[close]",
+				"period": "%bias_period_middle%"
+				}
+		},{
+			"name": "ma_long",
+			"method": "quant.ma.ma",
+			"method_args": {
+				"input_series": "[close]",
+				"period": "%bias_period_long%"
+				}
+		},{
+		"name": "bias_short",
+		"method": "quant.bias.bias",
+		"method_args": {
+			"close_series": "[close]",
+			"ma_series": "[ma_short]"
+			}
+		},{
+			"name": "bias_middle",
+			"method": "quant.bias.bias",
+			"method_args": {
+				"close_series": "[close]",
+				"ma_series": "[ma_middle]"
+				}
+		},{
+			"name": "bias_long",
+			"method": "quant.bias.bias",
+			"method_args": {
+				"close_series": "[close]",
+				"ma_series": "[ma_long]"
+				}
+		}],
+	"benchmark": []
+}
